@@ -42,27 +42,37 @@ async function run() {
       // step 1: get all services
       const services = await servicesCollection.find().toArray();
 
-      // get the booking of that day 
-      const query  = {date: date};
+      // get the booking of that day
+      const query = { date: date };
       const bookings = await bookingCollection.find(query).toArray();
 
       // for each service, find booking for that service
-      services.forEach(service => {
+      services.forEach((service) => {
         // find the bookings for that service[{}, {}, {}]
-        const serviceBookings = bookings.filter(book => book.treatment === service.name);
+        const serviceBookings = bookings.filter(
+          (book) => book.treatment === service.name
+        );
         // take or select slots for the service bookings['','','']
-        const booked = serviceBookings.map(book => book.slot);
-        // select those slots which are not in book slots 
-        const available = service.slots.filter(slot => !booked.includes(slot));
+        const booked = serviceBookings.map((book) => book.slot);
+        // select those slots which are not in book slots
+        const available = service.slots.filter(
+          (slot) => !booked.includes(slot)
+        );
         // set available to slots to make it easier
         service.slots = available;
-      })
+      });
 
       res.send(services);
     });
 
+    // get the booking data
+    app.get('/booking', async (req, res) => {
+      const patient = req.query.patient;
+      const query = { patient: patient };
+      const bookings = await bookingCollection.find(query).toArray();
+      res.send(bookings);
+    });
 
-    
     // get the single appointment data
     app.post("/booking", async (req, res) => {
       const booking = req.body;
