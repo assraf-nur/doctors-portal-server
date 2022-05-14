@@ -37,6 +37,22 @@ async function run() {
       res.send(services);
     });
 
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
     app.get("/available", async (req, res) => {
       const date = req.query.date || "May 14, 2022";
 
@@ -67,7 +83,7 @@ async function run() {
     });
 
     // get the booking data
-    app.get('/booking', async (req, res) => {
+    app.get("/booking", async (req, res) => {
       const patient = req.query.patient;
       const query = { patient: patient };
       const bookings = await bookingCollection.find(query).toArray();
