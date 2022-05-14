@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
     const servicesCollection = client.db("docPortal").collection("services");
     const bookingCollection = client.db("docPortal").collection("bookings");
+    const usersCollection = client.db("docPortal").collection("users");
 
     // send data to client site
     // all data sent
