@@ -21,6 +21,22 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// JWT token verify function
+function verifyJWT(req, res, next){
+  const authHeader = req.headers.authorization;
+  if(!authHeader){
+    return res.status(401).send({message: 'Unauthorized access'});
+  }
+  const token = authHeader.split(' ')[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded){
+    if(err){
+      return res.status(403).send({message: 'Forbidden access'})
+    }
+    req.decoded = decoded;
+    next();
+  })
+}
+
 // function for receive and send data in client site
 async function run() {
   try {
@@ -37,6 +53,12 @@ async function run() {
       const services = await cursor.toArray();
       res.send(services);
     });
+
+    // for showing all user api
+    app.get('/user', verifyJWT, async(req, res)=>{
+      const users = await usersCollection.find().toArray();
+      res.send(users);
+    })
 
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
@@ -85,11 +107,17 @@ async function run() {
     });
 
     // get the booking data
-    app.get("/booking", async (req, res) => {
+    app.get("/booking",verifyJWT, async (req, res) => {
       const patient = req.query.patient;
-      const query = { patient: patient };
-      const bookings = await bookingCollection.find(query).toArray();
-      res.send(bookings);
+      const decodedEmail = req.decoded.email;
+      if(patient === decodedEmail){
+        const query = { patient: patient };
+        const bookings = await bookingCollection.find(query).toArray();
+        return res.send(bookings);
+      }
+      else{
+        return res.status(403).send({message: 'forbidden access'})
+      }
     });
 
     // get the single appointment data
@@ -110,6 +138,7 @@ async function run() {
   } finally {
   }
 }
+
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
