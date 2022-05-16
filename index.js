@@ -37,6 +37,8 @@ function verifyJWT(req, res, next) {
   });
 }
 
+
+
 // function for receive and send data in client site
 async function run() {
   try {
@@ -73,7 +75,7 @@ async function run() {
       const email = req.params.email;
       const requester = req.decoded.email;
       const requesterAccount = await usersCollection.findOne({
-        email: requester,
+        email: requester
       });
       if (requesterAccount.role === "admin") {
         const filter = { email: email };
