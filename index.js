@@ -1,7 +1,7 @@
 // essential links for connection
 const express = require("express");
 // mongo link
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // for using cors
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
@@ -170,6 +170,14 @@ async function run() {
       const result = await bookingCollection.insertOne(booking);
       return res.send({ success: true, result });
     });
+
+    // load booking for show payment data
+    app.get('/booking/:id',verifyJWT, async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id: ObjectId(id)};
+      const booking = await bookingCollection.findOne(query);
+      res.send(booking);
+    })
 
     // load all doctor
     app.get("/doctors", verifyJWT, verifyAdmin, async (req, res) => {
